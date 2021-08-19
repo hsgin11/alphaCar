@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.user.dao.IUserDao">
+<select id="getUserList"
+	resultType="com.study.user.vo.UserVO">
+	SELECT user_id
+       , user_password
+       , user_name
+       , user_role
+       ,user_email
+       , to_char(user_reg_date,'YYYY-MM-DD')as user_reg_date
+       , user_age
+       , user_gender
+	FROM common_user
+	
+</select>
+<select id="getUser" resultType="com.study.user.vo.UserVO"
+parameterType="String">
+	SELECT user_id
+       , user_password
+       , user_name
+       , user_role
+       , to_char(user_reg_date,'YYYY-MM-DD')as user_reg_date
+       , user_age
+       , user_gender
+       , user_email
+	FROM common_user
+	WHERE user_id = #{userId}
+</select>
+<update id="updateUser"
+	parameterType="com.study.user.vo.UserVO">
+	update common_user set
+	user_password = #{userPassword},
+	user_name = #{userName},
+	user_email = #{userEmail},
+	user_role = #{userRole},
+	user_reg_date = #{userRegDate},
+	user_age = #{userAge},
+	user_gender = #{userGender}
+	where user_id = #{userId}
+</update>
+
+<delete id="deleteUser"
+			parameterType="com.study.user.vo.UserVO">
+	delete from common_user
+	where user_id = #{userId}
+</delete>
+
+<insert id="insertUser"
+	parameterType="com.study.user.vo.UserVO">
+	insert into common_user values(
+	#{userId},
+	#{userPassword},
+	#{userName},
+	#{userRole},
+	sysdate,
+	#{userAge},
+	#{userGender},
+	#{userEmail}
+	)
+		</insert>
+<!-- 아이디 중복체크 -->
+<select id="idchk" resultType="int">
+	select count(*)
+	from common_user
+	where user_id = #{userId}
+</select>
+
+<!-- 비밀번호 변경 -->
+<update id="updatePass" 	parameterType="com.study.user.vo.UserVO">
+update common_user set
+	user_password = #{userPassword}
+	where user_id = #{userId}
+</update>
+
+<select id="getCountInfo" parameterType="String" resultType="com.study.user.vo.UserCountVO">
+	select 
+    (SELECT 
+        count(*) 
+     FROM 
+        info_board 
+     where 
+        info_board_writer_id = #{userId}
+     )+
+    (SELECT 
+        count(*) 
+     FROM 
+        question_board 
+     where 
+        question_board_writer_id = #{userId}
+    ) as board_count
+    , (select 
+        sum(question_board_hit) 
+      FROM question_board where question_board_writer_id = #{userId}) + 
+      (SELECT 
+        sum(info_board_hit) 
+      FROM 
+        info_board 
+      where 
+        info_board_writer_id =#{userId}
+        ) as board_hit_count
+    ,(
+      select 
+        count(*) as reply_count 
+      from 
+        board_reply 
+      where re_mem_id = #{userId}
+     ) as board_reply_count
+from dual
+
+</select>
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.car.dao.ICarDao">
+	<select id="getCarList" resultType="com.study.car.vo.CarVO" parameterType="String">
+			select * 
+			from car 
+			where car_facturer = #{carFacCd}
+	</select>
+	
+	<select id="getCar" parameterType="String" resultType="com.study.car.vo.CarVO">
+			select * 
+			from car 
+			where car_id = #{carId}
+	
+	</select>
+	
+	<select id="getCarFacList" resultType="com.study.car.vo.CarCodeVO">
+		select car_facturer_nm,car_facturer_cd 
+		from car_facturer_code
+	</select>
+	
+	<select id="getMyCar" parameterType="String" resultType="com.study.car.vo.MyCarVO">
+		select * from my_car where user_id = #{userId}
+	
+	</select>
+	
+	<insert id="insertMyCar" parameterType="hashMap">
+	INSERT INTO my_car (
+	    car_id
+	    , my_car_name
+	    , user_id
+	    , my_car_distance_driven
+	) VALUES (
+		
+	    #{carId}
+	    ,#{myCarName}
+	    ,#{userId}
+	    , 0
+	)
+	</insert>
+	
+	<update id="updateMyCar" parameterType="com.study.car.vo.MyCarVO">
+		UPDATE my_car 
+		   SET car_id = #{carId}
+		     , my_car_name = (SELECT  car_name FROM car WHERE car_id = #{carId})
+		WHERE user_id = #{userId}
+	</update>
+	
+	<select id="getCarByName" parameterType="String" resultType="com.study.car.vo.CarVO">
+	select * from car where car_name = #{carName}
+	
+	
+	
+	
+	</select>
+	
+	
+	
+	
+</mapper>

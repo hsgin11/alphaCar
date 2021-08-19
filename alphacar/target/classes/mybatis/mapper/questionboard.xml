@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.board.questionboard.dao.IQuestionBoardDao">
+<sql id="search">
+<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchWord)">
+		<choose>
+			<when test='searchType== "T"'>AND question_board_title LIKE '%'|| #{searchWord} || '%'</when>
+			<when test='searchType== "W"'>AND question_board_writer LIKE '%'|| #{searchWord} || '%'</when>
+			<when test='searchType== "C"'>AND question_board_content LIKE '%'|| #{searchWord} || '%'</when>
+		</choose>
+	</if><!-- @클래스풀네임 @메소드이름(파라미터) -->    
+		
+</sql>
+
+	<select id="getQBoardCount" resultType="int">
+	
+		SELECT COUNT(*) FROM question_board WHERE 1=1
+		<include refid="search"></include>
+		
+	</select>
+	<update id="increseHit" parameterType="String">
+		update question_board set question_board_hit =question_board_hit+1 where question_board_no = #{boNo} 
+	</update>
+	<select id="getQBoardList" resultType="com.study.board.questionboard.vo.QuestionBoardVO" parameterType="com.study.board.questionboard.vo.QuestionBoardSearchVO">
+	
+	<include refid="common.prePaging"></include>
+		SELECT * FROM question_board
+		WHERE 1=1
+		<include refid="search"></include>
+		 order by question_notice_yn asc, to_number(question_board_no) desc
+	<include refid="common.postPaging"></include>
+	
+	</select>
+	<select id="getQBoard" parameterType="String" resultType="com.study.board.questionboard.vo.QuestionBoardVO">
+			SELECT * FROM question_board WHERE question_board_no = #{boNo}
+	</select>
+	<insert id="insertBoard" parameterType="com.study.board.questionboard.vo.QuestionBoardVO">
+		INSERT INTO question_board (
+    question_board_no
+    , question_board_title
+    , question_board_writer_id
+    , question_board_writer
+    , question_board_content
+    , question_board_reg_date
+    , question_notice_yn
+) VALUES (
+    seq_question_board_no.nextval
+    <![CDATA[
+    , #{questionBoardTitle}
+    , #{questionBoardWriterId}
+    , #{questionBoardWriter}
+    , #{questionBoardContent}
+    , sysdate
+    ,#{questionNoticeYn}
+    ]]>
+)
+	</insert>
+	
+	<select id="getQuestList" resultType="com.study.board.questionboard.vo.QuestionBoardVO">
+select  question_board_no, question_board_title,question_board_hit 
+	from (
+		select question_board_title,question_board_hit, question_board_no
+		,row_number() over(order by question_board_hit desc) as rank
+		,question_notice_yn
+		from question_board
+		where question_notice_yn is null
+		) a
+<![CDATA[where a.rank <= 5]]>	
+	</select>
+	
+	<select id="getNoticeList" resultType="com.study.board.questionboard.vo.QuestionBoardVO">
+		select  question_board_no, question_board_title,question_board_hit 
+			from (
+				select question_board_title,question_board_hit, question_board_no
+				,row_number() over(order by question_board_hit desc) as rank
+				,question_notice_yn
+				from question_board
+				where question_notice_yn = 'Y'
+				) a
+		<![CDATA[where a.rank <= 5]]>	
+	</select>
+	
+	
+	
+	
+	<delete id="deleteBoard" parameterType="String">
+		delete from question_board where question_board_no = #{boNo}
+	
+	
+	</delete>
+	
+	<update id="updateBoard" parameterType="com.study.board.questionboard.vo.QuestionBoardVO">
+	UPDATE question_board
+	SET
+	<![CDATA[
+	    question_board_title = #{questionBoardTitle},
+	    question_board_content =#{questionBoardContent}
+	WHERE question_board_no = #{questionBoardNo}
+	]]>
+	
+	
+	
+	</update>
+	
+	
+</mapper>
